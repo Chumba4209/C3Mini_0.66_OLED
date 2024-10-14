@@ -1,0 +1,49 @@
+#include <Wire.h>      // Include the Wire library for I2C communication
+#include <U8g2lib.h>   // Include the U8g2 library for OLED display
+#include <DHT.h>       // Include the DHT library for DHT sensor
+
+#define SCREEN_WIDTH 128    // Define the width of the OLED screen
+#define SCREEN_HEIGHT 64    // Define the height of the OLED screen
+
+// Setup U8g2 library with D1 (SCL) and D2 (SDA) pins for SSD1306 OLED
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ 10, /* data=*/ 8, /* reset=*/ U8X8_PIN_NONE);
+
+#define PIR_PIN 7 // Define the pin to which the PIR sensor is connected
+
+void setup() {
+  pinMode(PIR_PIN, INPUT); // Set PIR pin as input
+  u8g2.begin();
+}
+
+void loop() {
+  // Read the state of the PIR sensor
+  int motionDetected = digitalRead(PIR_PIN);
+  
+  // Clear the buffer before drawing to OLED
+  u8g2.clearBuffer();
+
+  // Set font for OLED display
+  u8g2.setFont(u8g2_font_6x12_tf); // Choose a font
+
+  // Display sensor name
+  //u8g2.setCursor(0, 10);
+  //u8g2.print("PIR");
+
+  
+  if (motionDetected == HIGH) {
+    u8g2.setCursor(40, 30);
+    u8g2.print("Motion");
+    u8g2.setCursor(40,40);
+    u8g2.print("Detected!");
+  } else {
+    u8g2.setCursor(40, 30);
+    u8g2.print("No Motion");
+    u8g2.setCursor(40,40);
+    u8g2.print("Detected");
+  }
+
+  // Update the OLED display with the buffer content
+  u8g2.sendBuffer();
+
+  delay(2000);  // Delay for 2 seconds before the next reading
+}

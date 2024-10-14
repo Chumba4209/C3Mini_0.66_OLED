@@ -1,0 +1,75 @@
+#include <Wire.h>      // Include the Wire library for I2C communication
+#include <U8g2lib.h>   // Include the U8g2 library for OLED display
+//#include <DHT.h>       // Include the DHT library for DHT sensor
+
+#define SCREEN_WIDTH 128    // Define the width of the OLED screen
+#define SCREEN_HEIGHT 64    // Define the height of the OLED screen
+
+// Setup U8g2 library with D1 (SCL) and D2 (SDA) pins for SSD1306 OLED
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ 10, /* data=*/ 8, /* reset=*/ U8X8_PIN_NONE);
+
+#define BUTTON_PIN 7// GPIO0, Pin connected to the button on the shield
+#define SDA_PIN 8    // GPIO4, Pin for I2C SDA
+#define SCL_PIN 10    // GPIO5, Pin for I2C SCL
+
+void setup() {
+  pinMode(BUTTON_PIN, INPUT_PULLUP); // Set the button pin as input with internal pull-up resistor
+  u8g2.begin();
+
+}
+
+void loop() {
+  // Read the state of the PIR sensor
+  int buttonState = digitalRead(BUTTON_PIN);
+  
+  // Clear the buffer before drawing to OLED
+  u8g2.clearBuffer();
+
+  // Set font for OLED display
+  u8g2.setFont(u8g2_font_6x12_tf); // Choose a font
+
+  // Display sensor name
+  //u8g2.setCursor(0, 10);
+ // u8g2.print("Button");
+   
+if (buttonState == LOW) { // Button is pressed
+    // Check if it's a long press
+    if (isLongPress()) {
+      u8g2.setCursor(40, 30);
+      u8g2.print("Long");
+      u8g2.setCursor(40, 40);
+      u8g2.print("pressed");
+      delay(500);
+    } else {// Button is pressed once
+      u8g2.setCursor(40, 30);
+      u8g2.print("Switch");
+      u8g2.setCursor(40, 40);
+      u8g2.print("pushed");
+      delay(1000);
+    }
+  } else { // Button is not pressed
+    u8g2.setCursor(40, 30);
+    u8g2.print("Switch");
+    u8g2.setCursor(40, 40);
+      u8g2.print("released");
+    delay(500);
+  }
+  
+  // Update the OLED display with the buffer content
+  u8g2.sendBuffer();
+
+  delay(2000);  // Delay for 2 seconds before the next reading
+}
+
+bool isLongPress() {
+  unsigned long pressTime = millis();
+  while (digitalRead(BUTTON_PIN) == LOW) {
+    if (millis() - pressTime > 1000) { // Long press duration (adjust as needed)
+      return true;
+    }
+  }
+  return false;
+}
+
+
+

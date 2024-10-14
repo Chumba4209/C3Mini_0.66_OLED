@@ -1,0 +1,77 @@
+#include <Wire.h>
+#include <Adafruit_SSD1306.h>
+#include <Adafruit_BMP085.h>
+
+// OLED Display Configuration
+#define SCREEN_WIDTH 128  // OLED display width, in pixels
+#define SCREEN_HEIGHT 32  // OLED display height, in pixels
+#define OLED_RESET -1     // Reset pin (or -1 if sharing Arduino reset pin)
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+// BMP180 Sensor Object
+Adafruit_BMP085 bmp;
+
+void setup() {
+  // Initialize Serial Monitor for debugging
+  Serial.begin(115200);
+
+  // Initialize I2C communication
+  Wire.begin();
+
+  // Initialize BMP180 sensor
+  if (!bmp.begin()) {
+    Serial.println("Could not find BMP180 sensor!");
+    while (1); // Halt if sensor is not found
+  }
+
+  // Initialize OLED display
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // 0x3C is the default I2C address
+    Serial.println("SSD1306 allocation failed");
+    while (1); // Halt if display not found
+  }
+
+  // Clear display buffer
+  display.clearDisplay();
+}
+
+void loop() {
+  // Read temperature and pressure from BMP180
+  float temperature = bmp.readTemperature();
+  int32_t pressure = bmp.readPressure();
+
+  // Display data on OLED
+  display.clearDisplay();  // Clear the display buffer
+  display.setTextSize(0.5);  // Normal 1:1 pixel scale
+  display.setTextColor(SSD1306_WHITE);  // Draw white text
+
+  // Display sensor label
+  display.setCursor(0, 0);
+  display.println("BMP180");
+
+  // Display temperature
+  display.setCursor(40, 10);
+  display.print("T: ");
+  display.print(temperature);
+  //display.println(" C");
+
+  // Display pressure
+  display.setCursor(40, 20);
+  display.print("P: ");
+  display.print(pressure / 100.0);  // Convert Pa to hPa
+  //display.println(" Pa");
+
+  // Push the data to the display
+  display.display();
+
+  // Print to Serial Monitor for debugging
+  Serial.print("Temperature: ");
+  Serial.print(temperature);
+  Serial.println(" C");
+
+  Serial.print("Pressure: ");
+  Serial.print(pressure / 100.0);
+  Serial.println(" hPa");
+
+  // Wait for 2 seconds before the next reading
+  delay(2000);
+}
